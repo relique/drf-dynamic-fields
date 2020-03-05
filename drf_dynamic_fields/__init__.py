@@ -2,6 +2,7 @@
 Mixin to dynamically select only a subset of fields per DRF resource.
 """
 import warnings
+import re
 
 from django.conf import settings
 
@@ -80,5 +81,18 @@ class DynamicFieldsMixin(object):
 
             if field in omitted:
                 fields.pop(field, None)
+                
+        # Convert camelCase to snake_case
+        converted_fields = []
+        
+        for field in fields:    
+            _name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', field)
+            converted_fields.append(
+                re.sub('([a-z0-9])([A-Z])', r'\1_\2', _name).lower()
+            )
+            fields.pop(field, None)
+
+        for field in converted_fields:
+            fields.append(field)
 
         return fields
