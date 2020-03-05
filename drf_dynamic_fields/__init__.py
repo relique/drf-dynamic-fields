@@ -7,6 +7,11 @@ import re
 from django.conf import settings
 
 
+def _to_snake_case(field):
+    field = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', field)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', field).lower()
+
+
 class DynamicFieldsMixin(object):
     """
     A serializer mixin that takes an additional `fields` argument that controls
@@ -62,6 +67,13 @@ class DynamicFieldsMixin(object):
             omit_fields = params.get('omit', None).split(',')
         except AttributeError:
             omit_fields = []
+            
+        # Convert camelCase to snake_case
+        for index, field in enumerate(filter_fields):
+            filter_fields[index] = _to_snake_case(field)
+
+        for index, field in enumerate(omit_fields):
+            omit_fields[index] = _to_snake_case(field)
 
         # Drop any fields that are not specified in the `fields` argument.
         existing = set(fields.keys())
@@ -82,17 +94,4 @@ class DynamicFieldsMixin(object):
             if field in omitted:
                 fields.pop(field, None)
                 
-        # Convert camelCase to snake_case
-        converted_fields = []
-        
-        for field in fields:    
-            _name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', field)
-            converted_fields.append(
-                re.sub('([a-z0-9])([A-Z])', r'\1_\2', _name).lower()
-            )
-            fields.pop(field, None)
-
-        for field in converted_fields:
-            fields.append(field)
-
         return fields
