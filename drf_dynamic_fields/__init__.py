@@ -69,8 +69,9 @@ class DynamicFieldsMixin(object):
             omit_fields = []
             
         # Convert camelCase to snake_case
-        for index, field in enumerate(filter_fields):
-            filter_fields[index] = _to_snake_case(field)
+        if filter_fields is not None:
+            for index, field in enumerate(filter_fields):
+                filter_fields[index] = _to_snake_case(field)
 
         for index, field in enumerate(omit_fields):
             omit_fields[index] = _to_snake_case(field)
